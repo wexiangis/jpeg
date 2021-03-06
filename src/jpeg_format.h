@@ -31,10 +31,12 @@ typedef struct
 
 typedef struct
 {
-    uint8_t bit;     // 每个数据样本位数,通常为8,一般软件不支持12、16
-    uint16_t height; // 图像高度,像素,不支持DNL时必须>0
-    uint16_t width;  // 图像宽度,像素,不支持DNL时必须>0
-    uint8_t color;   // 颜色分量 1:灰度图 3:YCrCb(JFIF中恒为该值)或YIQ 4:CMYK
+    uint8_t bit;      // 每个数据样本位数,通常为8,一般软件不支持12、16
+    uint8_t height_h; // 图像高度,像素,不支持DNL时必须>0
+    uint8_t height_l;
+    uint8_t width_h; // 图像宽度,像素,不支持DNL时必须>0
+    uint8_t width_l;
+    uint8_t color; // 颜色分量 1:灰度图 3:YCrCb(JFIF中恒为该值)或YIQ 4:CMYK
     // 以下循环x3字节,3来自上面的YCrCb
     struct ColorInfo
     {
@@ -63,16 +65,16 @@ typedef struct
 
 typedef struct
 {
-    uint8_t color; // 颜色分量,同上 JF_SOF0 中的 color
+    uint8_t color; // 颜色分量,同上 JF_SOF0 中的 color(JFIF格式固定为3)
     // 以下循环x3字节,3来自上面的YCrCb
     struct ColorDCAC
     {
-        uint8_t id:8; // 颜色分量ID
-        uint8_t dc:4; // 直流系数表号,用的哈夫曼树编号
-        uint8_t ac:4; // 交流系数表号,用的哈夫曼树编号
+        uint8_t id : 8; // 颜色分量ID
+        uint8_t dc : 4; // 直流系数表号,用的哈夫曼树编号
+        uint8_t ac : 4; // 交流系数表号,用的哈夫曼树编号
     } color_dcac[3];
-    uint8_t begin; // 谱选择开始,固定为0x00
-    uint8_t end; // 谱选择结束,固定为0x3F
+    uint8_t begin;  // 谱选择开始,固定为0x00
+    uint8_t end;    // 谱选择结束,固定为0x3F
     uint8_t select; // 谱选择,在基本JPEG中总为0x00
     /*
      *  后面紧接压缩数据
@@ -85,5 +87,17 @@ typedef struct
      */
     // ...
 } JF_SOS; // 0xFFDA 开始扫描
+
+// ---------- 合集 ----------
+
+typedef struct
+{
+    JF_APP0 *app0;
+    JF_DQT *dqt;
+    JF_SOF0 *sof0;
+    JF_DHT *dht;
+    JF_DRI *dri;
+    JF_SOS *sos;
+} JF_File;
 
 #endif

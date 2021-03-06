@@ -26,6 +26,8 @@ typedef enum
     JT_DHT = 0xFFC4,
     // 差分编码累计复位的间隔
     JT_DRI = 0xFFDD,
+    // 注释
+    JT_COM = 0xFFFE,
 } J_Type;
 
 typedef struct
@@ -37,6 +39,8 @@ typedef struct
 
     uint8_t *begin; // 整图内存起始
     uint8_t *end;   // 整图内存结束(注意 end - begin = 整图大小)
+
+    uint32_t dataLen;
 } Jpeg_Pkg;
 
 /*
@@ -49,6 +53,7 @@ int jpeg_getFrameFromData(Jpeg_Pkg *jp)
     // 找第一个 0xFF
     while (jp->next < jp->end)
     {
+        jp->dataLen++;
         if (*jp->next++ == 0xFF)
         {
             // printf("0xFF%02X \r\n", *jp->next);
@@ -70,9 +75,10 @@ int jpeg_getFrameFromData(Jpeg_Pkg *jp)
                 }
                 // 包 JT_EOI, JT_RST0~n
                 else if (*jp->next == 0xD9 ||
-                            (*jp->next > 0xCF &&
-                            *jp->next < 0xD8))
+                         (*jp->next > 0xCF &&
+                          *jp->next < 0xD8))
                 {
+                    jp->dataLen--;
                     jp->next -= 1;
                     return 0;
                 }
@@ -135,7 +141,8 @@ int jpeg_getFrame(Jpeg_Pkg *jp)
 
 void jpeg_info(char *file)
 {
-    Jpeg_Pkg jp;
+    Jpeg_Pkg jp = {.dataLen = 0};
+    JF_File jff;
     FbMap_Struct *fs = fbmap_open(file, FMT_R, 0);
 
     if (!fs)
@@ -149,57 +156,87 @@ void jpeg_info(char *file)
     {
         switch (jp.type)
         {
-        case JT_APP0:
-        {
-            JF_APP0 *p = (JF_APP0 *)jp.pkg;
-            printf("type %04X, len %d, tag %s, ver %d.%d, xy %dx%d\r\n",
-                jp.type, jp.pkgLen,
-                p->tag, p->ver_h, p->ver_l, p->short_x, p->short_y);
-            break;
-        }
-        case JT_DQT:
-        {
-            JF_DQT *p = (JF_DQT *)jp.pkg;
-            printf("type %04X, len %d, bit %d, id %d\r\n",
-                jp.type, jp.pkgLen,
-                p->bit, p->id);
-            break;
-        }
-        case JT_SOF0:
-        {
-            JF_SOF0 *p = (JF_SOF0 *)jp.pkg;
-            printf("type %04X, len %d, bit %d, xy %dx%d, color %d\r\n",
-                jp.type, jp.pkgLen,
-                p->bit, p->width, p->height, p->color);
-            break;
-        }
-        case JT_DHT:
-        {
-            JF_DHT *p = (JF_DHT *)jp.pkg;
-            printf("type %04X, len %d, type %d, id %d\r\n",
-                jp.type, jp.pkgLen,
-                p->type, p->id);
-            break;
-        }
-        case JT_DRI:
-        {
-            JF_DRI *p = (JF_DRI *)jp.pkg;
-            printf("type %04X, len %d, interval %d\r\n",
-                jp.type, jp.pkgLen,
-                p->interval);
-            break;
-        }
-        case JT_SOS:
-        {
-            JF_SOS *p = (JF_SOS *)jp.pkg;
-            printf("type %04X, len %d, color %d\r\n",
-                jp.type, jp.pkgLen,
-                p->color);
-            break;
-        }
-        default:
-            printf("type %04X, len %d \r\n", jp.type, jp.pkgLen);
-            break;
+            case JT_APP0:
+            {
+                jff.app0 = (JF_APP0 *)jp.pkg;
+                printf("type %04X, len %d, tag %s, ver %d.%d, density %d %d %d, short_xy %dx%d\r\n",
+                    jp.type, jp.pkgLen,
+                    jff.app0->tag, 
+                    jff.app0->ver_h, jff.app0->ver_l, 
+                    jff.app0->density, jff.app0->density_x, jff.app0->density_y,
+                    jff.app0->short_x, jff.app0->short_y);
+                break;
+            }
+            case JT_DQT:
+            {
+                jff.dqt = (JF_DQT *)jp.pkg;
+                printf("type %04X, len %d, bit %d, id %d\r\n",
+                    jp.type, jp.pkgLen,
+                    jff.dqt->bit, jff.dqt->id);
+                break;
+            }
+            case JT_SOF0:
+            {
+                jff.sof0 = (JF_SOF0 *)jp.pkg;
+                printf("type %04X, len %d, bit %d, WxH %dx%d, color %d, %d %d %d, %d %d %d, %d %d %d\r\n",
+                    jp.type, jp.pkgLen,
+                    jff.sof0->bit,
+                    jff.sof0->width_h * 256 + jff.sof0->width_l,
+                    jff.sof0->height_h * 256 + jff.sof0->height_l,
+                    jff.sof0->color,
+                    jff.sof0->color_info[0].id,
+                    jff.sof0->color_info[0].factors,
+                    jff.sof0->color_info[0].dqt,
+                    jff.sof0->color_info[1].id,
+                    jff.sof0->color_info[1].factors,
+                    jff.sof0->color_info[1].dqt,
+                    jff.sof0->color_info[2].id,
+                    jff.sof0->color_info[2].factors,
+                    jff.sof0->color_info[2].dqt);
+                break;
+            }
+            case JT_DHT:
+            {
+                jff.dht = (JF_DHT *)jp.pkg;
+                printf("type %04X, len %d, type %d, id %d\r\n",
+                    jp.type, jp.pkgLen,
+                    jff.dht->type, jff.dht->id);
+                break;
+            }
+            case JT_DRI:
+            {
+                jff.dri = (JF_DRI *)jp.pkg;
+                printf("type %04X, len %d, interval %d\r\n",
+                    jp.type, jp.pkgLen,
+                    jff.dri->interval);
+                break;
+            }
+            case JT_SOS:
+            {
+                jff.sos = (JF_SOS *)jp.pkg;
+                printf("type %04X, len %d, color %d\r\n",
+                    jp.type, jp.pkgLen,
+                    jff.sos->color);
+                break;
+            }
+            case JT_COM:
+            {
+                printf("type %04X, len %d %.*s\r\n", jp.type, jp.pkgLen, jp.pkgLen - 1, jp.pkg);
+                break;
+            }
+            case JT_EOI:
+            {
+                printf("type %04X, len %d, data %d \r\n", jp.type, jp.pkgLen, jp.dataLen);
+                break;
+            }
+            default:
+            {
+                if (jp.type > JT_APP0 && jp.type <= JT_APPn)
+                    printf("type %04X, len %d %.*s\r\n", jp.type, jp.pkgLen, jp.pkgLen - 1, jp.pkg);
+                else
+                    printf("type %04X, len %d \r\n", jp.type, jp.pkgLen);
+                break;
+            }
         }
         if (jp.type == JT_EOI)
             break;
