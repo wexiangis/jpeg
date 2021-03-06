@@ -6,9 +6,9 @@
 
 int main(int argc, char **argv)
 {
-    printf("JF_APP0: %ld \r\n", sizeof(JF_APP0));
-    printf("JF_SOF0: %ld \r\n", sizeof(JF_SOF0));
-    printf("JF_SOS: %ld \r\n", sizeof(JF_SOS));
+    // printf("JF_APP0: %ld \r\n", sizeof(JF_APP0));
+    // printf("JF_SOF0: %ld \r\n", sizeof(JF_SOF0));
+    // printf("JF_SOS: %ld \r\n", sizeof(JF_SOS));
     jpeg_info(argv[1]);
     return 0;
 }
