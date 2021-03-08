@@ -141,6 +141,7 @@ int jpeg_getFrame(Jpeg_Pkg *jp)
 
 void jpeg_info(char *file)
 {
+    uint8_t *pTmp;
     Jpeg_Pkg jp = {.dataLen = 0};
     JF_File jff;
     FbMap_Struct *fs = fbmap_open(file, FMT_R, 0);
@@ -156,10 +157,15 @@ void jpeg_info(char *file)
     {
         switch (jp.type)
         {
+            case JT_SOI:
+            {
+                printf("type %04X SOI len %d\r\n", jp.type, jp.pkgLen);
+                break;
+            }
             case JT_APP0:
             {
                 jff.app0 = (JF_APP0 *)jp.pkg;
-                printf("type %04X, len %d, tag %s, ver %d.%d, density %d %d %d, short_xy %dx%d\r\n",
+                printf("type %04X APP0 len %d, tag %s, ver %d.%d, density %d %d %d, short_xy %dx%d\r\n",
                     jp.type, jp.pkgLen,
                     jff.app0->tag, 
                     jff.app0->ver_h, jff.app0->ver_l, 
@@ -169,36 +175,83 @@ void jpeg_info(char *file)
             }
             case JT_DQT:
             {
+                printf("type %04X DQT len %d -- 量化表ID-位数 ", jp.type, jp.pkgLen);
+                pTmp = jp.pkg;
+                do {
+                    jff.dqt = (JF_DQT *)pTmp;
+                    printf("%d-%d ", jff.dqt->id, jff.dqt->bit ? 16 : 8);
+                    pTmp += 64 * (jff.dqt->bit + 1) + 1;
+                } while(pTmp < jp.next);
+                printf("\r\n");
                 jff.dqt = (JF_DQT *)jp.pkg;
-                printf("type %04X, len %d, bit %d, id %d\r\n",
-                    jp.type, jp.pkgLen,
-                    jff.dqt->bit, jff.dqt->id);
                 break;
             }
             case JT_SOF0:
             {
                 jff.sof0 = (JF_SOF0 *)jp.pkg;
-                printf("type %04X, len %d, bit %d, WxH %dx%d, color %d, %d %d %d, %d %d %d, %d %d %d\r\n",
+#if 0
+                jff.sof0->height_h = (uint8_t)(2160 >> 8);
+                jff.sof0->height_l = (uint8_t)(2160 & 0xFF);
+                jff.sof0->width_h = (uint8_t)(3840 >> 8);
+                jff.sof0->width_l = (uint8_t)(3840 & 0xFF);
+    
+                jff.sof0->color_info[0].factor_x = 4;
+                jff.sof0->color_info[0].factor_y = 4;
+                jff.sof0->color_info[1].factor_x = 2;
+                jff.sof0->color_info[1].factor_y = 2;
+                jff.sof0->color_info[2].factor_x = 2;
+                jff.sof0->color_info[2].factor_y = 2;
+#elif 0
+                jff.sof0->height_h = (uint8_t)(1080 >> 8);
+                jff.sof0->height_l = (uint8_t)(1080 & 0xFF);
+                jff.sof0->width_h = (uint8_t)(1920 >> 8);
+                jff.sof0->width_l = (uint8_t)(1920 & 0xFF);
+    
+                jff.sof0->color_info[0].factor_x = 2;
+                jff.sof0->color_info[0].factor_y = 2;
+                jff.sof0->color_info[1].factor_x = 1;
+                jff.sof0->color_info[1].factor_y = 1;
+                jff.sof0->color_info[2].factor_x = 1;
+                jff.sof0->color_info[2].factor_y = 1;
+#elif 0
+                jff.sof0->height_h = (uint8_t)(1080 >> 8);
+                jff.sof0->height_l = (uint8_t)(1080 & 0xFF);
+                jff.sof0->width_h = (uint8_t)(1920 >> 8);
+                jff.sof0->width_l = (uint8_t)(1920 & 0xFF);
+    
+                jff.sof0->color_info[0].factor_x = 2;
+                jff.sof0->color_info[0].factor_y = 2;
+                jff.sof0->color_info[1].factor_x = 1;
+                jff.sof0->color_info[1].factor_y = 1;
+                jff.sof0->color_info[2].factor_x = 1;
+                jff.sof0->color_info[2].factor_y = 1;
+#endif
+
+                printf("type %04X SOF0 len %d, bit %d, WxH %dx%d, color %d -- "
+                    "YCrCb序号-XY采样比例-量化表ID: %d-%dx%d-%d, %d-%dx%d-%d, %d-%dx%d-%d\r\n",
                     jp.type, jp.pkgLen,
                     jff.sof0->bit,
                     jff.sof0->width_h * 256 + jff.sof0->width_l,
                     jff.sof0->height_h * 256 + jff.sof0->height_l,
                     jff.sof0->color,
                     jff.sof0->color_info[0].id,
-                    jff.sof0->color_info[0].factors,
+                    jff.sof0->color_info[0].factor_x,
+                    jff.sof0->color_info[0].factor_y,
                     jff.sof0->color_info[0].dqt,
                     jff.sof0->color_info[1].id,
-                    jff.sof0->color_info[1].factors,
+                    jff.sof0->color_info[1].factor_x,
+                    jff.sof0->color_info[1].factor_y,
                     jff.sof0->color_info[1].dqt,
                     jff.sof0->color_info[2].id,
-                    jff.sof0->color_info[2].factors,
+                    jff.sof0->color_info[2].factor_x,
+                    jff.sof0->color_info[2].factor_y,
                     jff.sof0->color_info[2].dqt);
                 break;
             }
             case JT_DHT:
             {
                 jff.dht = (JF_DHT *)jp.pkg;
-                printf("type %04X, len %d, type %d, id %d\r\n",
+                printf("type %04X DHT len %d, type %d, id %d\r\n",
                     jp.type, jp.pkgLen,
                     jff.dht->type, jff.dht->id);
                 break;
@@ -206,7 +259,7 @@ void jpeg_info(char *file)
             case JT_DRI:
             {
                 jff.dri = (JF_DRI *)jp.pkg;
-                printf("type %04X, len %d, interval %d\r\n",
+                printf("type %04X DRI len %d, interval %d\r\n",
                     jp.type, jp.pkgLen,
                     jff.dri->interval);
                 break;
@@ -214,25 +267,35 @@ void jpeg_info(char *file)
             case JT_SOS:
             {
                 jff.sos = (JF_SOS *)jp.pkg;
-                printf("type %04X, len %d, color %d\r\n",
+                printf("type %04X SOS len %d, color %d -- "
+                    "YCrCb序号-量化表DC-量化表AC: %d-%d-%d, %d-%d-%d, %d-%d-%d\r\n",
                     jp.type, jp.pkgLen,
-                    jff.sos->color);
+                    jff.sos->color,
+                    jff.sos->color_dcac[0].id,
+                    jff.sos->color_dcac[0].dc,
+                    jff.sos->color_dcac[0].ac,
+                    jff.sos->color_dcac[1].id,
+                    jff.sos->color_dcac[1].dc,
+                    jff.sos->color_dcac[1].ac,
+                    jff.sos->color_dcac[2].id,
+                    jff.sos->color_dcac[2].dc,
+                    jff.sos->color_dcac[2].ac);
                 break;
             }
             case JT_COM:
             {
-                printf("type %04X, len %d %.*s\r\n", jp.type, jp.pkgLen, jp.pkgLen - 1, jp.pkg);
+                printf("type %04X COM len %d %.*s\r\n", jp.type, jp.pkgLen, jp.pkgLen - 1, jp.pkg);
                 break;
             }
             case JT_EOI:
             {
-                printf("type %04X, len %d, data %d \r\n", jp.type, jp.pkgLen, jp.dataLen);
+                printf("type %04X EOI len %d, data %d \r\n", jp.type, jp.pkgLen, jp.dataLen);
                 break;
             }
             default:
             {
                 if (jp.type > JT_APP0 && jp.type <= JT_APPn)
-                    printf("type %04X, len %d %.*s\r\n", jp.type, jp.pkgLen, jp.pkgLen - 1, jp.pkg);
+                    printf("type %04X APPn len %d %.*s\r\n", jp.type, jp.pkgLen, jp.pkgLen - 1, jp.pkg);
                 else
                     printf("type %04X, len %d \r\n", jp.type, jp.pkgLen);
                 break;

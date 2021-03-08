@@ -23,11 +23,11 @@ typedef struct
 
 typedef struct
 {
-    uint8_t bit : 4; // 高4位: 精度 0/8位,1/16位
-    uint8_t id : 4;  // 低4位: 量化表ID 取值0~3
+    uint8_t id : 4;  // 高4位: 量化表ID 取值0~3
+    uint8_t bit : 4; // 低4位: 精度 0/8位,1/16位
     // 这里接64x(精度+1)字节,如8位精度为64x(0+1)=64字节
     // ...
-} JF_DQT; // 0xFFDB 量化表
+} JF_DQT; // 0xFFDB 量化表(最多可重复出现4次)
 
 typedef struct
 {
@@ -40,9 +40,10 @@ typedef struct
     // 以下循环x3字节,3来自上面的YCrCb
     struct ColorInfo
     {
-        uint8_t id;      // 颜色分量ID
-        uint8_t factors; // 水平/垂直采样因子
-        uint8_t dqt;     // 当前分量使用的量化表ID
+        uint8_t id : 8;       // 颜色分量ID
+        uint8_t factor_x : 4; // 高4位: 水平采样因子
+        uint8_t factor_y : 4; // 低4位: 垂直采样因子
+        uint8_t dqt : 8;      // 当前分量使用的量化表ID
     } color_info[3];
 } JF_SOF0; // 0xFFC0 帧图像开始
 
@@ -50,9 +51,10 @@ typedef struct
 {
     uint8_t type : 4; // 高4位: 类型 0/DC直流 1/AC交流
     uint8_t id : 4;   // 低4位: 哈夫曼表ID,注意DC和AC表分开编码
-    // 未知
+    uint8_t sum[16];
+    // 上面 sum 数组元素累加之和,为接下来数据的长度
     // ...
-} JF_DHT; // 0xFFC4 哈夫曼表
+} JF_DHT; // 0xFFC4 哈夫曼表(该结构一般循环出现4次)
 
 typedef struct
 {
