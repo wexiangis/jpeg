@@ -9,7 +9,7 @@ ifdef cross
 endif
 
 #
-CFLAG =
+CFLAG = -lm
 
 # 源文件夹列表
 DIR_SRC = src

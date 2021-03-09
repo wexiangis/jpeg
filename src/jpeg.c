@@ -1,34 +1,18 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "jpeg_format.h"
+#include "jpegFormat.h"
 #include "fbmap.h"
 
-// 常用判断标志
-typedef enum
+typedef struct
 {
-    // 起始和结束
-    JT_SOI = 0xFFD8,
-    JT_EOI = 0xFFD9,
-    // 扫描开始
-    JT_SOS = 0xFFDA,
-    // 未知
-    JT_RST0 = 0xFFD0,
-    JT_RSTn = 0xFFD7,
-    // 文件信息, 注意 0xFFE1~0xFFEF 包格式和 0xFFE0 的不同
-    JT_APP0 = 0xFFE0,
-    JT_APPn = 0xFFEF,
-    // 量化表
-    JT_DQT = 0xFFDB,
-    // 帧图像开始
-    JT_SOF0 = 0xFFC0,
-    // 哈夫曼表
-    JT_DHT = 0xFFC4,
-    // 差分编码累计复位的间隔
-    JT_DRI = 0xFFDD,
-    // 注释
-    JT_COM = 0xFFFE,
-} J_Type;
+    JF_APP0 *app0;
+    JF_DQT *dqt;
+    JF_SOF0 *sof0;
+    JF_DHT *dht;
+    JF_DRI *dri;
+    JF_SOS *sos;
+} JF_File;
 
 typedef struct
 {
