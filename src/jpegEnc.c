@@ -53,11 +53,6 @@ static JF_SOF0 sof0_default = {
     },
 };
 
-// 0xFFC4 DHT 哈夫曼表
-static const JF_DHT dht_default = {
-    .type = 0,
-};
-
 // 0xFFDA SOS 开始扫描
 static const JF_SOS sos_default = {
     .color = 3,
@@ -101,6 +96,8 @@ static void write_head(int fd, JF_Type type, uint32_t len)
  */
 int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height)
 {
+    uint8_t dht_id;
+
     // 创建文件
     if ((jes->fd = open(file, O_CREAT | O_TRUNC | O_RDWR, 0666)) < 1)
     {
@@ -143,8 +140,23 @@ int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height)
     write_head(jes->fd, JT_SOF0, sizeof(sof0_default) + 2);
     write(jes->fd, &sof0_default, sizeof(sof0_default));
 
-    write_head(jes->fd, JT_DHT, sizeof(dht_default) + 2); // 待改动
-    write(jes->fd, &dht_default, sizeof(dht_default));
+    write_head(jes->fd, JT_DHT, 2 + (1 + 16 + 12 + 1 + 16 + 162) * 2);
+    dht_id = 0x00;
+    write(jes->fd, &dht_id, 1);
+    write(jes->fd, jf_y_dc_codes, sizeof(jf_y_dc_codes));
+    write(jes->fd, jf_y_dc_values, sizeof(jf_y_dc_values));
+    dht_id = 0x01;
+    write(jes->fd, &dht_id, 1);
+    write(jes->fd, jf_crcb_dc_codes, sizeof(jf_crcb_dc_codes));
+    write(jes->fd, jf_crcb_dc_values, sizeof(jf_crcb_dc_values));
+    dht_id = 0x10;
+    write(jes->fd, &dht_id, 1);
+    write(jes->fd, jf_y_ac_codes, sizeof(jf_y_ac_codes));
+    write(jes->fd, jf_y_ac_values, sizeof(jf_y_ac_values));
+    dht_id = 0x11;
+    write(jes->fd, &dht_id, 1);
+    write(jes->fd, jf_crcb_ac_codes, sizeof(jf_crcb_ac_codes));
+    write(jes->fd, jf_crcb_ac_values, sizeof(jf_crcb_ac_values));
 
     write_head(jes->fd, JT_SOS, sizeof(sos_default) + 2);
     write(jes->fd, &sos_default, sizeof(sos_default));

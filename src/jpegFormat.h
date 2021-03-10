@@ -83,9 +83,8 @@ typedef struct
 {
     uint8_t type : 4; // 高4位: 类型 0/DC直流 1/AC交流
     uint8_t id : 4;   // 低4位: 哈夫曼表ID,注意DC和AC表分开编码
-    uint8_t sum[16];
-    // 上面 sum 数组元素累加之和,为接下来数据的长度
-    // ...
+    uint8_t codes[16]; // 接下来固定16字节的codes
+    uint8_t *values; // 根据上面codes数组元素累加之和,为该段数据的长度
 } JF_DHT; // 0xFFC4 哈夫曼表(该结构一般循环出现4次)
 
 typedef struct
@@ -130,5 +129,14 @@ extern const uint8_t jf_qt_table_y[64];
 extern const uint8_t jf_qt_table_crcb[64];
 // Z路径排序取值,以下为数组元素序号
 extern const int jf_z_loop[64];
+
+extern const uint8_t jf_y_dc_codes[16];
+extern const uint8_t jf_y_dc_values[12];
+extern const uint8_t jf_crcb_dc_codes[16];
+extern const uint8_t jf_crcb_dc_values[12];
+extern const uint8_t jf_y_ac_codes[16];
+extern const uint8_t jf_y_ac_values[162];
+extern const uint8_t jf_crcb_ac_codes[16];
+extern const uint8_t jf_crcb_ac_values[162];
 
 #endif

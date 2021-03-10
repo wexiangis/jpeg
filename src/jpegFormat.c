@@ -69,19 +69,19 @@ const int jf_z_loop[64] = {
     21, 34, 37, 47, 50, 56, 59, 61,
     35, 36, 48, 49, 57, 58, 62, 63};
 
-const char jf_y_dc_codes[] = {
+const uint8_t jf_y_dc_codes[16] = {
     0, 0, 7, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-const unsigned char jf_y_dc_values[] = {
+const uint8_t jf_y_dc_values[12] = {
     4, 5, 3, 2, 6, 1, 0, 7, 8, 9, 10, 11};
 
-const char jf_crcb_dc_codes[] = {
+const uint8_t jf_crcb_dc_codes[16] = {
     0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
-const unsigned char jf_crcb_dc_values[] = {
+const uint8_t jf_crcb_dc_values[12] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-const char jf_y_ac_codes[] = {
+const uint8_t jf_y_ac_codes[16] = {
     0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d};
-const unsigned char jf_y_ac_values[] = {
+const uint8_t jf_y_ac_values[162] = {
     0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12,
     0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07,
     0x22, 0x71, 0x14, 0x32, 0x81, 0x91, 0xa1, 0x08,
@@ -104,9 +104,9 @@ const unsigned char jf_y_ac_values[] = {
     0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
     0xf9, 0xfa};
 
-const char jf_crcb_ac_codes[] = {
+const uint8_t jf_crcb_ac_codes[16] = {
     0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77};
-const unsigned char jf_crcb_ac_values[] = {
+const uint8_t jf_crcb_ac_values[162] = {
     0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21,
     0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71,
     0x13, 0x22, 0x32, 0x81, 0x08, 0x14, 0x42, 0x91,

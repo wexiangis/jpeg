@@ -125,7 +125,9 @@ int jpeg_getFrame(Jpeg_Pkg *jp)
 
 void jpeg_info(char *file)
 {
+    int i, sum;
     uint8_t *pTmp;
+
     Jpeg_Pkg jp = {.dataLen = 0};
     JF_File jff;
     FbMap_Struct *fs = fbmap_open(file, FMT_R, 0);
@@ -235,9 +237,17 @@ void jpeg_info(char *file)
             case JT_DHT:
             {
                 jff.dht = (JF_DHT *)jp.pkg;
-                printf("type %04X DHT len %d, type %d, id %d\r\n",
-                    jp.type, jp.pkgLen,
-                    jff.dht->type, jff.dht->id);
+                printf("type %04X DHT len %d -- 哈夫曼表DC/AC:ID-长度", jp.type, jp.pkgLen);
+                pTmp = jp.pkg;
+                do {
+                    jff.dht = (JF_DHT *)pTmp;
+                    for (i = 0, sum = 0; i < 16; i++)
+                        sum += jff.dht->codes[i];
+                    printf("%d:%d-%d ", jff.dht->type, jff.dht->id, sum);
+                    pTmp += 1 + 16 + sum;
+                } while(pTmp < jp.next);
+                printf("\r\n");
+                jff.dht = (JF_DHT *)jp.pkg;
                 break;
             }
             case JT_DRI:
