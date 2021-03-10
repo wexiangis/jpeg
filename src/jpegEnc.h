@@ -7,10 +7,10 @@ typedef struct {
     int fd;
     // 图片宽高
     int width, height;
-    // 每帧YCrCb中包含的Y、Cr、Cb帧(8x8)数量
+    // 每帧YUV中包含的Y、U、V帧(8x8)数量
     int frameNumY;
-    int frameNumCr;
-    int frameNumCb;
+    int frameNumU;
+    int frameNumV;
     // 写入帧计数和总帧数
     int frameCount;
     int frameTotal;
@@ -24,19 +24,19 @@ typedef struct {
 int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height);
 
 /*
- *  YCrCb格式的帧数据写入
+ *  YUV格式的帧数据写入
  *  参数:
  *      *Y[64]: 8x8块数组,至少jes->frameY块
- *      *Cr[64]: 8x8块数组,至少jes->frameCr块
- *      *Cb[64]: 8x8块数组,至少jes->frameCb块
+ *      *U[64]: 8x8块数组,至少jes->frameU块
+ *      *V[64]: 8x8块数组,至少jes->frameV块
  *      frameSize: 一次传入帧数,当为1时,至少传入上面
  *  返回: 实际写入帧数,小于frameSize时表示已满
  */
 int jpegEnc_frame(
     JpegEnc_Struct *jes,
     uint8_t *Y[64],
-    uint8_t *Cr[64],
-    uint8_t *Cb[64],
+    uint8_t *U[64],
+    uint8_t *V[64],
     int frameSize);
 
 /*

@@ -27,7 +27,7 @@ static const uint8_t com_default[] = "JPEG Encode Test";
 static const JF_DQT dqt0_default = {0, 0};
 static const JF_DQT dqt1_default = {1, 0};
 
-// 0xFFC0 SOF0 帧图像开始(以下为YCrCb 4:1:1配置)
+// 0xFFC0 SOF0 帧图像开始(以下为YUV 4:1:1配置)
 static JF_SOF0 sof0_default = {
     .bit = 8,
     .color = 3,
@@ -109,14 +109,14 @@ int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height)
     jes->height = height;
     jes->frameCount = 0;
     jes->frameTotal = jes->width * jes->height / jes->frameNumY;
-    // 每帧中需包含Y、Cr、Cb帧(8x8)数量
+    // 每帧中需包含Y、U、V帧(8x8)数量
     jes->frameNumY =
         sof0_default.color_info[0].factor_x *
         sof0_default.color_info[0].factor_y;
-    jes->frameNumCr =
+    jes->frameNumU =
         sof0_default.color_info[1].factor_x *
         sof0_default.color_info[1].factor_y;
-    jes->frameNumCb =
+    jes->frameNumV =
         sof0_default.color_info[2].factor_x *
         sof0_default.color_info[2].factor_y;
     // 图片宽高配置
@@ -135,7 +135,7 @@ int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height)
     write(jes->fd, &dqt0_default, 1);
     write(jes->fd, jf_qt_table_y, 64);
     write(jes->fd, &dqt1_default, 1);
-    write(jes->fd, jf_qt_table_crcb, 64);
+    write(jes->fd, jf_qt_table_uv, 64);
 
     write_head(jes->fd, JT_SOF0, sizeof(sof0_default) + 2);
     write(jes->fd, &sof0_default, sizeof(sof0_default));
@@ -147,16 +147,16 @@ int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height)
     write(jes->fd, jf_y_dc_values, sizeof(jf_y_dc_values));
     dht_id = 0x01;
     write(jes->fd, &dht_id, 1);
-    write(jes->fd, jf_crcb_dc_codes, sizeof(jf_crcb_dc_codes));
-    write(jes->fd, jf_crcb_dc_values, sizeof(jf_crcb_dc_values));
+    write(jes->fd, jf_uv_dc_codes, sizeof(jf_uv_dc_codes));
+    write(jes->fd, jf_uv_dc_values, sizeof(jf_uv_dc_values));
     dht_id = 0x10;
     write(jes->fd, &dht_id, 1);
     write(jes->fd, jf_y_ac_codes, sizeof(jf_y_ac_codes));
     write(jes->fd, jf_y_ac_values, sizeof(jf_y_ac_values));
     dht_id = 0x11;
     write(jes->fd, &dht_id, 1);
-    write(jes->fd, jf_crcb_ac_codes, sizeof(jf_crcb_ac_codes));
-    write(jes->fd, jf_crcb_ac_values, sizeof(jf_crcb_ac_values));
+    write(jes->fd, jf_uv_ac_codes, sizeof(jf_uv_ac_codes));
+    write(jes->fd, jf_uv_ac_values, sizeof(jf_uv_ac_values));
 
     write_head(jes->fd, JT_SOS, sizeof(sos_default) + 2);
     write(jes->fd, &sos_default, sizeof(sos_default));
@@ -165,17 +165,40 @@ int jpegEnc_create(JpegEnc_Struct *jes, char *file, int width, int height)
 }
 
 /*
- *  YCrCb格式的帧数据写入
+ *  YUV格式的帧数据写入
  *  参数:
  *  返回: 实际写入帧数,小于frameSize时表示已满
  */
 int jpegEnc_frame(
     JpegEnc_Struct *jes,
     uint8_t *Y[64],
-    uint8_t *Cr[64],
-    uint8_t *Cb[64],
+    uint8_t *U[64],
+    uint8_t *V[64],
     int frameSize)
 {
+    int c_frameSize, c_frame;
+    uint8_t buff[64];
+
+    for (c_frameSize = 0; c_frameSize < frameSize; ++c_frameSize)
+    {
+        for(c_frame = 0; c_frame < jes->frameNumY; ++c_frame)
+        {
+            //DCT矩阵变换
+            ;
+            //Z取值
+            ;
+            //DC、AC数据转bit
+            ;
+        }
+        for(c_frame = 0; c_frame < jes->frameNumU; ++c_frame)
+        {
+            ;
+        }
+        for(c_frame = 0; c_frame < jes->frameNumV; ++c_frame)
+        {
+            ;
+        }
+    }
 
     return 0;
 }

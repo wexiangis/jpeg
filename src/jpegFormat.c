@@ -36,7 +36,7 @@ const float jf_dct_table[64] = {
 0.09754516, -0.27778512, 0.41573480, -0.49039263, 0.49039263, -0.41573480, 0.27778512, -0.09754516};
 #endif
 
-// YCrCb中Y帧的8x8采样图像使用的量化表
+// YUV中Y帧的8x8采样图像使用的量化表
 const uint8_t jf_qt_table_y[64] = {
     16, 11, 10, 16, 24, 40, 51, 61,
     12, 12, 14, 19, 26, 58, 60, 55,
@@ -47,8 +47,8 @@ const uint8_t jf_qt_table_y[64] = {
     49, 64, 78, 87, 103, 121, 120, 101,
     72, 92, 95, 98, 112, 100, 103, 99};
 
-// YCrCb中CrCb帧的8x8采样图像使用的量化表
-const uint8_t jf_qt_table_crcb[64] = {
+// YUV中CrCb帧的8x8采样图像使用的量化表
+const uint8_t jf_qt_table_uv[64] = {
     17, 18, 24, 47, 99, 99, 99, 99,
     18, 21, 26, 66, 99, 99, 99, 99,
     24, 26, 56, 99, 99, 99, 99, 99,
@@ -74,9 +74,9 @@ const uint8_t jf_y_dc_codes[16] = {
 const uint8_t jf_y_dc_values[12] = {
     4, 5, 3, 2, 6, 1, 0, 7, 8, 9, 10, 11};
 
-const uint8_t jf_crcb_dc_codes[16] = {
+const uint8_t jf_uv_dc_codes[16] = {
     0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
-const uint8_t jf_crcb_dc_values[12] = {
+const uint8_t jf_uv_dc_values[12] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
 const uint8_t jf_y_ac_codes[16] = {
@@ -104,9 +104,9 @@ const uint8_t jf_y_ac_values[162] = {
     0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
     0xf9, 0xfa};
 
-const uint8_t jf_crcb_ac_codes[16] = {
+const uint8_t jf_uv_ac_codes[16] = {
     0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77};
-const uint8_t jf_crcb_ac_values[162] = {
+const uint8_t jf_uv_ac_values[162] = {
     0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21,
     0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71,
     0x13, 0x22, 0x32, 0x81, 0x08, 0x14, 0x42, 0x91,

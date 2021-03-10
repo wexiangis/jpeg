@@ -9,7 +9,10 @@ typedef struct
     JF_APP0 *app0;
     JF_DQT *dqt;
     JF_SOF0 *sof0;
-    JF_DHT *dht;
+    JF_DHT_DC *dht_y_dc;
+    JF_DHT_AC *dht_y_ac;
+    JF_DHT_DC *dht_uv_dc;
+    JF_DHT_AC *dht_uv_ac;
     JF_DRI *dri;
     JF_SOS *sos;
 } JF_File;
@@ -214,7 +217,7 @@ void jpeg_info(char *file)
 #endif
 
                 printf("type %04X SOF0 len %d, bit %d, WxH %dx%d, color %d -- "
-                    "YCrCb序号-XY采样比例-量化表ID: %d-%dx%d-%d, %d-%dx%d-%d, %d-%dx%d-%d\r\n",
+                    "YUV序号-XY采样比例-量化表ID: %d-%dx%d-%d, %d-%dx%d-%d, %d-%dx%d-%d\r\n",
                     jp.type, jp.pkgLen,
                     jff.sof0->bit,
                     jff.sof0->width_h * 256 + jff.sof0->width_l,
@@ -236,18 +239,27 @@ void jpeg_info(char *file)
             }
             case JT_DHT:
             {
-                jff.dht = (JF_DHT *)jp.pkg;
                 printf("type %04X DHT len %d -- 哈夫曼表DC/AC:ID-长度", jp.type, jp.pkgLen);
                 pTmp = jp.pkg;
                 do {
-                    jff.dht = (JF_DHT *)pTmp;
-                    for (i = 0, sum = 0; i < 16; i++)
-                        sum += jff.dht->codes[i];
-                    printf("%d:%d-%d ", jff.dht->type, jff.dht->id, sum);
+                    //对号入座
+                    if (pTmp[0] == 0x00)
+                        jff.dht_y_dc = (JF_DHT_DC *)pTmp;
+                    else if (pTmp[0] == 0x10)
+                        jff.dht_y_ac = (JF_DHT_AC *)pTmp;
+                    else if (pTmp[0] == 0x01)
+                        jff.dht_uv_dc = (JF_DHT_DC *)pTmp;
+                    else if (pTmp[0] == 0x11)
+                        jff.dht_uv_ac = (JF_DHT_AC *)pTmp;
+                    //统计数据段长度
+                    for (i = 1, sum = 0; i < 17; i++)
+                        sum += pTmp[i];
+                    //
+                    printf("%02X-%d ", *pTmp, sum);
+                    //下一包
                     pTmp += 1 + 16 + sum;
                 } while(pTmp < jp.next);
                 printf("\r\n");
-                jff.dht = (JF_DHT *)jp.pkg;
                 break;
             }
             case JT_DRI:
@@ -262,7 +274,7 @@ void jpeg_info(char *file)
             {
                 jff.sos = (JF_SOS *)jp.pkg;
                 printf("type %04X SOS len %d, color %d -- "
-                    "YCrCb序号-量化表DC-量化表AC: %d-%d-%d, %d-%d-%d, %d-%d-%d\r\n",
+                    "YUV序号-量化表DC-量化表AC: %d-%d-%d, %d-%d-%d, %d-%d-%d\r\n",
                     jp.type, jp.pkgLen,
                     jff.sos->color,
                     jff.sos->color_dcac[0].id,

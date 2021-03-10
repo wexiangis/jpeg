@@ -74,7 +74,7 @@ FbMap_Struct *fbmap_open(char *file, FbMap_Type type, int size)
     // 检查文件大小
     fstat(fd, &info);
     size = info.st_size;
-    printf("file size: %d \r\n", size);
+    // printf("file size: %d \r\n", size);
 
     // 内存映射(第一个0表示不指定内存地址,最后的0表示从文件起始地址开始映射)
     mem = (unsigned char *)mmap(0, size, prot, MAP_SHARED, fd, 0);

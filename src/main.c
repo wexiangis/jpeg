@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #if 1
-#include "jpeg.h"
+#include "jpegDec.h"
 #include "jpegFormat.h"
 #include "jpeg_math.h"
 
@@ -10,7 +10,6 @@ int main(int argc, char **argv)
     // printf("JF_APP0: %ld \r\n", sizeof(JF_APP0));
     // printf("JF_SOF0: %ld \r\n", sizeof(JF_SOF0));
     // printf("JF_SOS: %ld \r\n", sizeof(JF_SOS));
-    printf("JF_DHT: %ld \r\n", sizeof(JF_DHT));
     jpeg_info(argv[1]);
     // jpeg_dct_dqt(NULL, NULL);
     return 0;
